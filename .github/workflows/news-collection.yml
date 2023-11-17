@@ -1,0 +1,43 @@
+name: Update News
+
+on:
+  schedule:
+      - cron: "30 3 * * *"
+      - cron: "30 6 * * *"
+      - cron: "30 12 * * *"
+      - cron: "30 16 * * *"
+      - cron: "30 18 * * *"
+  #push:
+  #  branches:
+   #   - main
+
+jobs:
+  run_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11  # Change this to the appropriate Python version if needed
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run News Collection
+        working-directory: backend_data
+        run: |
+          python news_collection.py  # Replace this with the actual command to run your script
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "bhavesh.161201@gmail.com"
+          git config --global user.name "Bhavesh Jain"
+          
+          git add .
+          git commit -m "News updated on `date +'%d-%m-%Y'`"
+          git push origin main
