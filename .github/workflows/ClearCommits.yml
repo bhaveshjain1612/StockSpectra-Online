@@ -1,0 +1,42 @@
+name: Reset Git Commit History
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_message:
+        description: 'Commit message for the new orphan branch'
+        required: true
+        default: 'Initial commit'
+
+jobs:
+  reset-git-history:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Configure Git user
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "bhavesh.161201@gmail.com"
+
+      - name: Create orphan branch
+        run: |
+          git checkout --orphan latest_branch
+
+      - name: Add all files to the new branch
+        run: git add -A
+
+      - name: Commit changes
+        run: |
+          git commit -m "${{ github.event.inputs.commit_message }}"
+
+      - name: Delete old main branch
+        run: git branch -D main
+
+      - name: Rename new branch to main
+        run: git branch -m main
+
+      - name: Force push to remote repository
+        run: git push -f origin main

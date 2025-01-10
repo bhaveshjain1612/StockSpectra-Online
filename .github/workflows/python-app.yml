@@ -1,0 +1,38 @@
+name: Update data
+
+on:
+  schedule:
+      - cron: "30 10 * * 1-5"
+
+jobs:
+  run_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11  # Change this to the appropriate Python version if needed
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run collective_backend
+        working-directory: backend_data
+        run: |
+          python collective_backend.py  # Replace this with the actual command to run your script
+
+      - name: Merge remote changes and push
+        run: |
+          git config --global user.email "bhavesh.161201@gmail.com"
+          git config --global user.name "Bhavesh Jain"
+          
+          git fetch origin main
+          git merge origin/main
+          git add .
+          git commit -m "Data updated on `date +'%d-%m-%Y'`"
+          git push origin main
