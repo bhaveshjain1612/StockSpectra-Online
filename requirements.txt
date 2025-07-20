@@ -1,4 +1,4 @@
-yfinance==0.2.32
+yfinance==0.2.65
 seaborn==0.13.0
 tqdm==4.66.1
 streamlit==1.28.2
