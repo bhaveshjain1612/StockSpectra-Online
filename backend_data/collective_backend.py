@@ -16,7 +16,7 @@ def retrieve_api(symbol):
 # *********************************************************************************************************************
 # Firmographics Section
 # *********************************************************************************************************************
-'''
+
 # Function to extract company data from API result
 def get_company_data(result):
     # Creating a function to handle missing values from API while assigning variables
@@ -108,7 +108,7 @@ compiled["created_on"] = datetime.now()
 
 # Save the compiled firmographics to a CSV file
 compiled.to_csv('db_firmo.csv', index=False)
-'''
+
 # *********************************************************************************************************************
 #Stock Data
 # *********************************************************************************************************************
@@ -118,7 +118,7 @@ def get_hist_data(result):
     # Get today's date
     date_today = date.today() + timedelta(days=1)
     # Fetch historical data from 2020-01-01 until today for daily intervals
-    historical = result.history(end=date_today, start="2020-01-01", period="1d")
+    historical = result.history(period="2y")
 
     # Remove days with zero trading volume (representing market holidays)
     historical = historical[historical['Volume'] != 0]
