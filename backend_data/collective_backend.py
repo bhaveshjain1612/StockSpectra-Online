@@ -109,6 +109,7 @@ compiled["created_on"] = datetime.now()
 # Save the compiled firmographics to a CSV file
 compiled.to_csv('db_firmo.csv', index=False)
 
+
 # *********************************************************************************************************************
 #Stock Data
 # *********************************************************************************************************************
@@ -137,7 +138,7 @@ def get_hist_data(result):
     historical['date_only'] = date_only
     
     # Keep only values from the last 2 years
-    historical_sample = historical[historical['date_only'] > historical['date_only'][0] - np.timedelta64(2, "Y")]
+    historical_sample = historical#[historical['date_only'] > historical['date_only'][0] - np.timedelta64(2, "Y")]
     
     return historical_sample
 
@@ -432,35 +433,98 @@ def compile_single(symbol):
     return data
 
 #calculate % change b/w two ends of user defined interval and qty
-def calc_change(data,series,duration, changetype):
-    #duartion is atuple i.e 1 month is (1, 'M'), 1 week is (1, 'W') etc.
-    if duration[1]!="D":
-        end = data['date_only'][0]
-        start = end-np.timedelta64(duration[0], duration[1])
-        value_start = data[data['date_only']>=start][series].values[-1]
-        value_end = data[data['date_only']>=end][series].values[-1]
+def calc_change(data, series, duration, changetype):
+    """
+    Calculate the change over a user‐defined interval.
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Must contain 'date_only' (datetime64) and, if using trading days,
+        a 'Trading Day' integer column.
+    series : str
+        Column name in `data` whose change you want.
+    duration : tuple
+        (n, unit), unit in {'D','W','M','Y'}.
+    changetype : str
+        '%' for percent change, anything else for absolute.
+    """
+    n, unit = duration
+    
+    if unit != "D":
+        # translate to days
+        if unit == "W":
+            days = n * 7
+        elif unit == "M":
+            days = n * 30
+        elif unit == "Y":
+            days = n * 365
+        else:
+            raise ValueError(f"Unsupported duration unit: {unit!r}")
+        
+        end_date = data['date_only'].iloc[0]
+        start_date = end_date - pd.Timedelta(days=days)
+        
+        # select the first row on/after start_date, and last row on/before end_date
+        df_interval = data[(data['date_only'] >= start_date) & 
+                           (data['date_only'] <= end_date)]
+        if df_interval.empty:
+            raise ValueError("No data in the requested interval")
+        
+        value_start = df_interval[series].iloc[0]
+        value_end   = df_interval[series].iloc[-1]
+        
     else:
-        value_end = data[data["Trading Day"]==1][series].values[0]
-        value_start = data[data["Trading Day"]==1+duration[0]][series].values[0]
-   
-    #return (value_start,value_end)
+        # Duration in trading days
+        # Assumes 'Trading Day' counts 1,2,3,... in descending order?
+        # Adjust logic as needed to match your data layout.
+        value_end = data.loc[data["Trading Day"] == 1, series].iloc[0]
+        value_start = data.loc[data["Trading Day"] == 1 + n, series].iloc[0]
+    
     if changetype == "%":
-        return round(((value_end - value_start) / value_start) * 100,2)
+        return round((value_end - value_start) / value_start * 100, 2)
     else:
-        return (value_end - value_start)
+        return value_end - value_start
 
 def stds(data):
+    """
+    Calculate rolling standard deviation of 'Close' over various intervals,
+    approximating 1M as 30D and 1Y as 365D.
+    
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Must contain a datetime64 column 'date_only' and a float column 'Close'.
+        The first row is taken as the 'end' date.
+    
+    Returns
+    -------
+    pd.DataFrame
+        Single‐row DataFrame with columns ['std_1M','std_3M','std_6M','std_1Y'].
+    """
     durations = [(1, "M"), (3, "M"), (6, "M"), (1, "Y")]
-    end = data['date_only'][0]
+    end_date = data['date_only'].iloc[0]
     
-    std_values = [
-        data[data['date_only'] >= (end - np.timedelta64(duration[0], duration[1]))]['Close'].std()
-        for duration in durations
-    ]
+    std_values = []
+    for n, unit in durations:
+        # map unit to days
+        if unit == "W":
+            days = n * 7
+        elif unit == "M":
+            days = n * 30
+        elif unit == "Y":
+            days = n * 365
+        else:
+            raise ValueError(f"Unsupported duration unit: {unit!r}")
+        
+        start_date = end_date - pd.Timedelta(days=days)
+        # filter between start_date and end_date
+        mask = (data['date_only'] >= start_date) & (data['date_only'] <= end_date)
+        std = data.loc[mask, 'Close'].std()
+        std_values.append(std)
     
-    columns = ['std_' + str(duration[0]) + duration[1] for duration in durations]
+    columns = [f"std_{n}{unit}" for n, unit in durations]
     volatility = pd.DataFrame([std_values], columns=columns)
-    
     return volatility
 
 def calc_most_recent(data, column_list):
