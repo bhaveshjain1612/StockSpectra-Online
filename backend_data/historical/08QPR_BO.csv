@@ -1,2 +1,2 @@
 Trading Day,Date,Open,High,Low,Close,Volume,Dividends,Stock Splits,date_only,RollingMean,RollingStd,UpperBand1,LowerBand1,UpperBand2,LowerBand2,CCI_10,CCI_40,OBV,VPT,VPT_signal,VWAP,MFI_14,PP,R1,S1,R2,S2,R3,S3,CMF,%R,macd,macd_signal,macde_histogram,rsi,ADX,sma_5,sma_20,sma_50,sma_100,symbol,created_on
-1,2025-07-25 00:00:00+05:30,2589.25,2589.25,2589.25,2589.25,6,0.0,0.0,2025-07-25,,,,,,,,,6,,,2589.25,,2589.25,2589.25,2589.25,2589.25,2589.25,2589.25,2589.25,,,0.0,0.0,0.0,,,,,,,08QPR.BO,2025-07-25 12:16:01.903351
+1,2025-07-29 00:00:00+05:30,2200.0,2330.0,2171.75,2171.75,12,0.0,0.0,2025-07-29,,,,,,,,,12,,,2171.75,,2224.5,2277.25,2119.0,2382.75,2066.25,2435.5,1960.75,,,0.0,0.0,0.0,,,,,,,08QPR.BO,2025-07-29 12:18:14.518975
