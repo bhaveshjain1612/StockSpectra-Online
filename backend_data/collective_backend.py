@@ -5,6 +5,8 @@ from tqdm import tqdm
 from datetime import date, datetime, timedelta
 import numpy as np
 import warnings
+import time
+import random
 
 # Code where you want to ignore warnings
 warnings.filterwarnings("ignore")
@@ -16,7 +18,7 @@ def retrieve_api(symbol):
 # *********************************************************************************************************************
 # Firmographics Section
 # *********************************************************************************************************************
-
+'''
 # Function to extract company data from API result
 def get_company_data(result):
     # Creating a function to handle missing values from API while assigning variables
@@ -108,7 +110,7 @@ compiled["created_on"] = datetime.now()
 
 # Save the compiled firmographics to a CSV file
 compiled.to_csv('db_firmo.csv', index=False)
-
+'''
 
 # *********************************************************************************************************************
 #Stock Data
@@ -576,14 +578,16 @@ def collect_features(df):
 db_firmo = pd.read_csv("db_firmo.csv")
 symbol_list = db_firmo.Symbol
 kpi_df = pd.DataFrame()
-
-# Loop through the list of symbols, compile historical data and technical indicators, and generate features for each company
-for i in tqdm(symbol_list):
+for sym in tqdm(symbol_list):
+    time.sleep(1 + random.random() * 0.5)
     try:
-        x = collect_features(compile_single(i))
-        kpi_df = pd.concat([kpi_df, x], axis=0)
-    except:
-        continue
+        single_df = compile_single(sym)
+        features = collect_features(single_df)
+        kpi_df = pd.concat([kpi_df, features], axis=0)
+    except Exception as e:
+        print(f"→ Error processing {sym!r}: {e}")
+        # optionally: traceback.print_exc()
+
 
 # Save the compiled features to a CSV file named 'historical_kpis.csv'
 kpi_df.to_csv("historical_kpis.csv", index=False)
